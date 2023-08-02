@@ -10,10 +10,6 @@ from torch.nn import functional as F
 from torch.utils import data
 from torchvision import transforms
 import mindspore as ms
-import mindspore
-from mindspore.dataset import transforms, vision
-import mindspore.dataset as ds
-import mindspore.ops as ops
 nn_Module = nn.Module
 
 #################   WARNING   ################
@@ -48,7 +44,7 @@ from PIL import Image
 from torch import nn
 from torch.nn import functional as F
 from torch.utils import data
-
+from torchvision import transforms
 
 def use_svg_display():
     """Use the svg format to display a plot in Jupyter.
@@ -142,61 +138,38 @@ def synthetic_data(w, b, num_examples):
     """Generate y = Xw + b + noise.
 
     Defined in :numref:`sec_linear_scratch`"""
-    X = mindspore.Tensor(np.random.normal(0, 1, (num_examples, len(w))).astype(np.float32))
-    y = mindspore.Tensor.matmul(X, w) + b
-    y += mindspore.Tensor(np.random.normal(0, 0.01, y.shape).astype(np.float32))
-    return X, y.reshape((-1, 1))
+    X = d2l.normal(0, 1, (num_examples, len(w)))
+    y = d2l.matmul(X, w) + b
+    y += d2l.normal(0, 0.01, y.shape)
+    return X, d2l.reshape(y, (-1, 1))
 
 def linreg(X, w, b):
     """The linear regression model.
 
     Defined in :numref:`sec_linear_scratch`"""
-    return ops.matmul(X, w) + b
+    return d2l.matmul(X, w) + b
 
 def squared_loss(y_hat, y):
     """Squared loss.
 
     Defined in :numref:`sec_linear_scratch`"""
-    return (y_hat - ops.reshape(y, y_hat.shape)) ** 2 / 2
+    return (y_hat - d2l.reshape(y, y_hat.shape)) ** 2 / 2
 
-def sgd(params, params_grad, lr, batch_size):
+def sgd(params, lr, batch_size):
     """Minibatch stochastic gradient descent.
 
     Defined in :numref:`sec_linear_scratch`"""
-    assert len(params) == len(params_grad)
-    for i in range(len(params)):
-        params[i] -= lr * params_grad[i] / batch_size
-    return params
+    with torch.no_grad():
+        for param in params:
+            param -= lr * param.grad / batch_size
+            param.grad.zero_()
 
 def load_array(data_arrays, batch_size, is_train=True):
     """Construct a PyTorch data iterator.
 
     Defined in :numref:`sec_linear_concise`"""
-    dataset = ds.NumpySlicesDataset(data_arrays, column_names=["features", "labels"], shuffle=is_train).batch(batch_size)
-    return dataset
-
-def load_mnist(path, kind='train'): 
-    import os
-    import gzip
-    import numpy as np
-
-    """Load MNIST data from `path`"""
-    labels_path = os.path.join(path,
-                               '%s-labels-idx1-ubyte.gz'
-                               % kind)
-    images_path = os.path.join(path,
-                               '%s-images-idx3-ubyte.gz'
-                               % kind)
-
-    with gzip.open(labels_path, 'rb') as lbpath:
-        labels = np.frombuffer(lbpath.read(), dtype=np.uint8,
-                               offset=8)
-
-    with gzip.open(images_path, 'rb') as imgpath:
-        images = np.frombuffer(imgpath.read(), dtype=np.uint8,
-                               offset=16).reshape(len(labels), 28, 28, 1)
-
-    return images, labels
+    dataset = data.TensorDataset(*data_arrays)
+    return data.DataLoader(dataset, batch_size, shuffle=is_train)
 
 def get_fashion_mnist_labels(labels):
     """Return text labels for the Fashion-MNIST dataset.
@@ -214,11 +187,11 @@ def show_images(imgs, num_rows, num_cols, titles=None, scale=1.5):
     _, axes = d2l.plt.subplots(num_rows, num_cols, figsize=figsize)
     axes = axes.flatten()
     for i, (ax, img) in enumerate(zip(axes, imgs)):
-        if ops.is_tensor(img):
-            # 图片张量
+        if torch.is_tensor(img):
+            # Tensor Image
             ax.imshow(img.numpy())
         else:
-            # PIL图片
+            # PIL Image
             ax.imshow(img)
         ax.axes.get_xaxis().set_visible(False)
         ax.axes.get_yaxis().set_visible(False)
@@ -232,55 +205,43 @@ def get_dataloader_workers():
     Defined in :numref:`sec_fashion_mnist`"""
     return 4
 
-class FashionMnist(): #@save
-    def __init__(self, path, kind):
-        self.data, self.label = d2l.load_mnist(path, kind)
-    
-    def __getitem__(self, index):
-        return self.data[index], self.label[index]
-    
-    def __len__(self):
-        return len(self.data)
-
 def load_data_fashion_mnist(batch_size, resize=None):
     """Download the Fashion-MNIST dataset and then load it into memory.
 
     Defined in :numref:`sec_fashion_mnist`"""
-    trans = [vision.ToTensor()]
+    trans = [transforms.ToTensor()]
     if resize:
-        trans.insert(0, vision.Resize(resize))
-    type_cast_op = transforms.TypeCast(ms.int32)
-    mnist_train = FashionMnist('../data/FashionMNIST/raw/', kind='train')
-    mnist_train = ds.GeneratorDataset(source=mnist_train, column_names=['image', 'label'], shuffle=True)
-    mnist_test = FashionMnist('../data/FashionMNIST/raw/', kind='t10k')
-    mnist_test = ds.GeneratorDataset(source=mnist_test, column_names=['image', 'label'], shuffle=True)
-    mnist_train = mnist_train.map(trans, input_columns=["image"])
-    mnist_test = mnist_test.map(trans, input_columns=["image"])
-    mnist_train = mnist_train.map(type_cast_op, input_columns=['label'])
-    mnist_test = mnist_test.map(type_cast_op, input_columns=['label'])
-    mnist_train = mnist_train.batch(batch_size=batch_size, num_parallel_workers=get_dataloader_workers())
-    mnist_test = mnist_test.batch(batch_size=batch_size, num_parallel_workers=get_dataloader_workers())
-    ds.config.set_num_parallel_workers(get_dataloader_workers()) 
-    return (mnist_train, mnist_test)
+        trans.insert(0, transforms.Resize(resize))
+    trans = transforms.Compose(trans)
+    mnist_train = torchvision.datasets.FashionMNIST(
+        root="../data", train=True, transform=trans, download=True)
+    mnist_test = torchvision.datasets.FashionMNIST(
+        root="../data", train=False, transform=trans, download=True)
+    return (data.DataLoader(mnist_train, batch_size, shuffle=True,
+                            num_workers=get_dataloader_workers()),
+            data.DataLoader(mnist_test, batch_size, shuffle=False,
+                            num_workers=get_dataloader_workers()))
 
 def accuracy(y_hat, y):
     """Compute the number of correct predictions.
 
     Defined in :numref:`sec_softmax_scratch`"""
     if len(y_hat.shape) > 1 and y_hat.shape[1] > 1:
-        y_hat = y_hat.argmax(axis=1)
-    cmp = y_hat.astype(y.dtype) == y
-    return float(cmp.astype(y.dtype).sum())
+        y_hat = d2l.argmax(y_hat, axis=1)
+    cmp = d2l.astype(y_hat, y.dtype) == y
+    return float(d2l.reduce_sum(d2l.astype(cmp, y.dtype)))
 
 def evaluate_accuracy(net, data_iter):
     """Compute the accuracy for a model on a dataset.
 
     Defined in :numref:`sec_softmax_scratch`"""
-    if isinstance(net, ms.nn.Cell):
-        net.set_train(False)  # 将模型设置为评估模式
-    metric = Accumulator(2)  # 正确预测数、预测总数
-    for X, y in data_iter:
-        metric.add(accuracy(net(X), y), y.numel())
+    if isinstance(net, torch.nn.Module):
+        net.eval()  # Set the model to evaluation mode
+    metric = Accumulator(2)  # No. of correct predictions, no. of predictions
+
+    with torch.no_grad():
+        for X, y in data_iter:
+            metric.add(accuracy(net(X), y), d2l.size(y))
     return metric[0] / metric[1]
 
 class Accumulator:
@@ -298,42 +259,30 @@ class Accumulator:
     def __getitem__(self, idx):
         return self.data[idx]
 
-def train_epoch_ch3(net, train_iter, loss, updater):  #@save
-    # global W,b
-    def forward_fn(inputs, targets):
-        logits = net(inputs)
-        l = loss(logits, targets)
-        return l
-    """训练模型一个迭代周期（定义见第3章）"""
-    # 将模型设置为训练模式
-    if isinstance(net, ms.nn.Cell):
-        net.set_train(True)
-    # 训练损失总和、训练准确度总和、样本数
+def train_epoch_ch3(net, train_iter, loss, updater):
+    """The training loop defined in Chapter 3.
+
+    Defined in :numref:`sec_softmax_scratch`"""
+    # Set the model to training mode
+    if isinstance(net, torch.nn.Module):
+        net.train()
+    # Sum of training loss, sum of training accuracy, no. of examples
     metric = Accumulator(3)
     for X, y in train_iter:
-        # 计算梯度并更新参数
-        if isinstance(updater, ms.nn.Optimizer):
-            # 使用MindSpore内置的优化器和损失函数
-            grad_fn = ms.value_and_grad(forward_fn, grad_position=None, weights=updater.parameters)
-            l, grads = grad_fn(X, y)
-            y_hat = net(X)
-            updater(grads)
+        # Compute gradients and update parameters
+        y_hat = net(X)
+        l = loss(y_hat, y)
+        if isinstance(updater, torch.optim.Optimizer):
+            # Using PyTorch in-built optimizer & loss criterion
+            updater.zero_grad()
+            l.mean().backward()
+            updater.step()
         else:
-            # 使用定制的优化器和损失函数
-            global W
-            global b
-            y_hat = net(X, W, b)
-            def subf(X, W, b):
-                l = loss(net(X, W, b), y)
-                l = l.sum()
-                return l
-            l = subf(X, W, b)
-            grad_fn = ms.grad(subf, grad_position=(1,2)) #position角标从0开始
-            grads = grad_fn(X, W, b)
-            
-            W,b = updater(grads, X.shape[0]) #X.shape[0]是batch_size
+            # Using custom built optimizer & loss criterion
+            l.sum().backward()
+            updater(X.shape[0])
         metric.add(float(l.sum()), accuracy(y_hat, y), y.numel())
-    # 返回训练损失和训练精度
+    # Return training loss and training accuracy
     return metric[0] / metric[2], metric[1] / metric[2]
 
 class Animator:

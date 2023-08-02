@@ -1,0 +1,240 @@
+# 1.This file shows the parsed IR info when graph evaluating failed to help find the problem.
+# 2.You can search the last `------------------------>` to the node which is inferred failed.
+# 3.Refer to https://www.mindspore.cn/search?inputValue=analyze_fail.ir to get more instructions.
+# ===============================================================================
+
+subgraph attr:
+subgraph instance: bprop_builder.1782 : 0x5607a9bf4090
+
+subgraph @bprop_builder.1782(%para1_, %para2_, %para3_, %para4_, %para5_, %para6_, %para7_, %para8_, %para9_, %para10_, %para11_) {
+  %1([CNode]1799) = EnvironCreate()
+      #scope: (Default)
+  %2([CNode]1800) = EnvironCreate()
+      #scope: (Default)
+  %3([CNode]1801) = MakeTuple(%2)
+      : (<Object:EnvType, NoShape>) -> (<Tuple[Object:EnvType], TupleShape(NoShape)>)
+      #scope: (Default)
+
+#------------------------> 0
+  %4([CNode]2) = ZerosLike-zeros_like(%para1_[Parameter]1783)
+      : (<Tuple[Tensor[Float32]*2], TupleShape((1, 1), (1))>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %5(1802) = fake_bprop[info="Primitive SGD's bprop not defined."](Tensor(43)[1, 1])
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %6([CNode]1803) = RealInner(%5)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %7([CNode]3) = S-Prim-tuple_setitem[is_load=Bool(1)](%4, I64(0), %6)
+      : (<null>, <null>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %8([CNode]4) = ZerosLike-zeros_like(I64(0))
+      : (<null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %9([CNode]5) = S-Prim-MakeTuple[is_load=Bool(1)](%7, %8)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %10([CNode]1804) = TupleAdd-tuple_add(%3, %9)
+      : (<Tuple[Object:EnvType], TupleShape(NoShape)>, <null>) -> (<null>)
+      #scope: (Default)
+  %11([CNode]1805) = TupleGetItem(%10, I64(1))
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+  %12([CNode]1800) = EnvironCreate()
+      #scope: (Default)
+  %13([CNode]1801) = MakeTuple(%12)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %14([CNode]2) = ZerosLike-zeros_like(%para1_[Parameter]1783)
+      : (<Tuple[Tensor[Float32]*2], TupleShape((1, 1), (1))>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %15(1802) = fake_bprop[info="Primitive SGD's bprop not defined."](Tensor(43)[1])
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %16([CNode]1806) = RealInner(%15)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %17([CNode]3) = S-Prim-tuple_setitem[is_load=Bool(1)](%14, I64(1), %16)
+      : (<null>, <null>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %18([CNode]4) = ZerosLike-zeros_like(I64(1))
+      : (<null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %19([CNode]5) = S-Prim-MakeTuple[is_load=Bool(1)](%17, %18)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %20([CNode]1804) = TupleAdd-tuple_add(%13, %19)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+  %21([CNode]1807) = TupleGetItem(%20, I64(1))
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+  %22([CNode]1808) = HyperMapPy-hyper_map[add_backward]{fn_leaf=MultitypeFuncGraph-add_backward{(MapTensor, MapTensor), (EnvType, EnvType), (CSRTensor, Tuple), (CSRTensor, CSRTensor), (COOTensor, COOTensor), (COOTensor, Tuple), (UMonad, UMonad), (Tuple, CSRTensor), (Number, Number), (Tuple, COOTensor), (IOMonad, IOMonad), (Tensor, Tensor), (RowTensor, Tensor), (NoneType, NoneType)}}(%11, %21)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default)
+  %23(1809) = fake_bprop[info="Primitive SGD's bprop not defined."](%para2_[Parameter]1784)
+      : (<Ref[Tensor[Float32]], (1, 1)>) -> (<null>)
+      #scope: (Default)
+  %24([CNode]1810) = RealInner(%23)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %25(1809) = fake_bprop[info="Primitive SGD's bprop not defined."](%para3_[Parameter]1785)
+      : (<Ref[Tensor[Float32]], (1)>) -> (<null>)
+      #scope: (Default)
+  %26([CNode]1811) = RealInner(%25)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %27(1812) = fake_bprop[info="Primitive SGD's bprop not defined."](%para4_[Parameter]1786)
+      : (<Ref[Tensor[Float32]], (1, 1)>) -> (<null>)
+      #scope: (Default)
+  %28([CNode]1813) = RealInner(%27)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %29(1812) = fake_bprop[info="Primitive SGD's bprop not defined."](%para5_[Parameter]1787)
+      : (<Ref[Tensor[Float32]], (1)>) -> (<null>)
+      #scope: (Default)
+  %30([CNode]1814) = RealInner(%29)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %31(1815) = fake_bprop[info="Primitive SGD's bprop not defined."](%para6_[Parameter]1788)
+      : (<Ref[Tensor[Float32]], (1, 1)>) -> (<null>)
+      #scope: (Default)
+  %32([CNode]1816) = RealInner(%31)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %33(1815) = fake_bprop[info="Primitive SGD's bprop not defined."](%para7_[Parameter]1789)
+      : (<Ref[Tensor[Float32]], (1)>) -> (<null>)
+      #scope: (Default)
+  %34([CNode]1817) = RealInner(%33)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %35(1818) = fake_bprop[info="Primitive SGD's bprop not defined."](%para8_[Parameter]1790)
+      : (<Ref[Tensor[Float32]], ()>) -> (<null>)
+      #scope: (Default)
+  %36([CNode]1819) = RealInner(%35)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %37(1818) = fake_bprop[info="Primitive SGD's bprop not defined."](%para8_[Parameter]1790)
+      : (<Ref[Tensor[Float32]], ()>) -> (<null>)
+      #scope: (Default)
+  %38([CNode]1820) = RealInner(%37)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %39([CNode]1821) = HyperMapPy-hyper_map[add_backward]{fn_leaf=MultitypeFuncGraph-add_backward{(MapTensor, MapTensor), (EnvType, EnvType), (CSRTensor, Tuple), (CSRTensor, CSRTensor), (COOTensor, COOTensor), (COOTensor, Tuple), (UMonad, UMonad), (Tuple, CSRTensor), (Number, Number), (Tuple, COOTensor), (IOMonad, IOMonad), (Tensor, Tensor), (RowTensor, Tensor), (NoneType, NoneType)}}(%36, %38)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default)
+  %40(1822) = fake_bprop[info="Primitive SGD's bprop not defined."](%para9_[Parameter]1791)
+      : (<Ref[Tensor[Float32]], ()>) -> (<null>)
+      #scope: (Default)
+  %41([CNode]1823) = RealInner(%40)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %42(1822) = fake_bprop[info="Primitive SGD's bprop not defined."](%para9_[Parameter]1791)
+      : (<Ref[Tensor[Float32]], ()>) -> (<null>)
+      #scope: (Default)
+  %43([CNode]1824) = RealInner(%42)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  %44([CNode]1825) = HyperMapPy-hyper_map[add_backward]{fn_leaf=MultitypeFuncGraph-add_backward{(MapTensor, MapTensor), (EnvType, EnvType), (CSRTensor, Tuple), (CSRTensor, CSRTensor), (COOTensor, COOTensor), (COOTensor, Tuple), (UMonad, UMonad), (Tuple, CSRTensor), (Number, Number), (Tuple, COOTensor), (IOMonad, IOMonad), (Tensor, Tensor), (RowTensor, Tensor), (NoneType, NoneType)}}(%41, %43)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default)
+  %45([CNode]1826) = ZerosLike-zeros_like(%para10_[Parameter]1792)
+      : (<Ref[Tensor[Int32]], (1)>) -> (<null>)
+      #scope: (Default)
+  %46([CNode]1827) = MakeTuple(%1, %22, %24, %26, %28, %30, %32, %34, %39, %44, %45)
+      : (<Object:EnvType, NoShape>, <null>, <null>, <null>, <null>, <null>, <null>, <null>, <null>, <null>, <null>) -> (<null>)
+      #scope: (Default)
+  Return(%46)
+      : (<null>)
+      #scope: (Default)
+}
+# Order:
+#   1: @bprop_builder.1782:[CNode]1828{[0]: ValueNode<Primitive> Return, [1]: [CNode]1827}
+
+
+subgraph attr:
+spec_param : 1
+core : 1
+subgraph instance: hyper_map.1794 : 0x5607a6881ac0
+
+subgraph @hyper_map.1794(%para12_) {
+  %1([CNode]2) = TupleGetItem(%para12_1795, I64(0))
+      : (<Tuple[Tensor[Float32]*2], TupleShape((1, 1), (1))>, <Int64, NoShape>) -> (<Tensor[Float32], (1, 1)>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+
+#------------------------> 1
+  %2([CNode]2) = HyperMap-hyper_map[zeros_like_leaf]{fn_leaf=MultitypeFuncGraph-zeros_like_leaf{(EnvType), (UMonad), (IOMonad), (Func), (Dictionary), (COOTensor), (MapTensor), (CSRTensor), (Bool), (Tensor), (TypeType), (NoneType), (RefKeyType), (Number), (Keyword), (ProblemType)}}(%1)
+      : (<Tensor[Float32], (1, 1)>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %3([CNode]2) = TupleGetItem(%para12_1795, I64(1))
+      : (<Tuple[Tensor[Float32]*2], TupleShape((1, 1), (1))>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %4([CNode]2) = HyperMap-hyper_map[zeros_like_leaf]{fn_leaf=MultitypeFuncGraph-zeros_like_leaf{(EnvType), (UMonad), (IOMonad), (Func), (Dictionary), (COOTensor), (MapTensor), (CSRTensor), (Bool), (Tensor), (TypeType), (NoneType), (RefKeyType), (Number), (Keyword), (ProblemType)}}(%3)
+      : (<null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  %5([CNode]2) = MakeTuple(%2, %4)
+      : (<null>, <null>) -> (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+  Return(%5)
+      : (<null>)
+      #scope: (Gradients/Default/gradTupleGetItem)
+}
+# Order:
+#   1: @hyper_map.1794:[CNode]2{[0]: ValueNode<Primitive> TupleGetItem, [1]: 1795, [2]: ValueNode<Int64Imm> 0}
+#   2: @hyper_map.1794:[CNode]2{[0]: ValueNode<HyperMap> MetaFuncGraph-hyper_map[zeros_like_leaf].1829, [1]: [CNode]2}
+#   3: @hyper_map.1794:[CNode]2{[0]: ValueNode<Primitive> TupleGetItem, [1]: 1795, [2]: ValueNode<Int64Imm> 1}
+#   4: @hyper_map.1794:[CNode]2{[0]: ValueNode<HyperMap> MetaFuncGraph-hyper_map[zeros_like_leaf].1829, [1]: [CNode]2}
+#   5: @hyper_map.1794:[CNode]2{[0]: ValueNode<Primitive> MakeTuple, [1]: [CNode]2, [2]: [CNode]2}
+#   6: @hyper_map.1794:[CNode]2{[0]: ValueNode<Primitive> Return, [1]: [CNode]2}
+
+
+subgraph attr:
+spec_param : 1
+core : 1
+subgraph instance: hyper_map.1796 : 0x5607a9c117f0
+
+subgraph @hyper_map.1796(%para13_) {
+
+#------------------------> 2
+  %1([CNode]2) = MultitypeFuncGraph-zeros_like_leaf{(EnvType), (UMonad), (IOMonad), (Func), (Dictionary), (COOTensor), (MapTensor), (CSRTensor), (Bool), (Tensor), (TypeType), (NoneType), (RefKeyType), (Number), (Keyword), (ProblemType)}(%para13_[Parameter]1797)
+      : (<Tensor[Float32], (1, 1)>) -> (<null>)
+      #scope: (Default)
+  Return(%1)
+      : (<null>)
+      #scope: (Default)
+}
+# Order:
+#   1: @hyper_map.1796:[CNode]2{[0]: ValueNode<MultitypeFuncGraph> MetaFuncGraph-zeros_like_leaf.1830, [1]: [Parameter]1797}
+#   2: @hyper_map.1796:[CNode]2{[0]: ValueNode<Primitive> Return, [1]: [CNode]2}
+
+
+subgraph attr:
+subgraph instance: _zeros_like_tensor.1798 : 0x5607a9de65b0
+# In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/ops/composite/multitype_ops/zeros_like_impl.py:61/def _zeros_like_tensor(x):/
+subgraph @_zeros_like_tensor.1798(%para14_x) {
+
+#------------------------> 3
+  %1([CNode]2) = resolve(SymbolStr, F)
+      : (<External, NoShape>, <External, NoShape>) -> (<null>)
+      #scope: (Default)
+  %2([CNode]2) = getattr(%1, "zeros_like")
+      : (<null>, <null>) -> (<null>)
+      #scope: (Default)
+  %3([CNode]2) = %2(%para14_x)
+      : (<Tensor[Float32], (1, 1)>) -> (<null>)
+      #scope: (Default)
+  Return(%3)
+      : (<null>)
+      #scope: (Default)
+}
+# Order:
+#   1: @_zeros_like_tensor.1798:[CNode]2{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> SymbolStr: 'Namespace:mindspore.ops.composite.multitype_ops.zeros_like_impl', [2]: ValueNode<Symbol> F}
+#   2: @_zeros_like_tensor.1798:[CNode]2{[0]: ValueNode<Primitive> getattr, [1]: [CNode]2, [2]: ValueNode<StringImm> zeros_like}
+#   3: @_zeros_like_tensor.1831:[CNode]1832{[0]: ValueNode<Primitive> resolve, [1]: ValueNode<NameSpace> CommonOPS: 'Namespace:mindspore._extends.parse.trope', [2]: ValueNode<Symbol> MakeTuple}
+#   4: @_zeros_like_tensor.1831:[CNode]1833{[0]: [CNode]1832, [1]: x}
+#   5: @_zeros_like_tensor.1798:[CNode]2{[0]: [CNode]2, [1]: x}
+#   6: @_zeros_like_tensor.1798:[CNode]2{[0]: ValueNode<Primitive> Return, [1]: [CNode]2}
+
+
+#===============================================================================
+# num of function graphs in stack: 4
