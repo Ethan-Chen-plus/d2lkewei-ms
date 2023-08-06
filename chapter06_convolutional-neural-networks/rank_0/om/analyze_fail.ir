@@ -1,0 +1,102 @@
+# 1.This file shows the parsed IR info when graph evaluating failed to help find the problem.
+# 2.You can search the last `------------------------>` to the node which is inferred failed.
+# 3.Refer to https://www.mindspore.cn/search?inputValue=analyze_fail.ir to get more instructions.
+# ===============================================================================
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: mindspore_nn_optim_sgd_SGD_construct.43 : 0x5605f91c7f50
+# In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:205/    def construct(self, gradients):/
+subgraph @mindspore_nn_optim_sgd_SGD_construct.43(%para1_gradients, %para2_weight, %para3_accum.weight, %para4_stat.weight, %para5_momentum, %para6_learning_rate, %para7_global_step) {
+  %1([CNode]47) = Cond(Bool(0), Bool(0))
+      : (<Bool, NoShape>, <Bool, NoShape>) -> (<Bool, NoShape>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:213/        if self.is_group_lr:/
+  %2([CNode]48) = Switch(%1, call @✓mindspore_nn_optim_sgd_SGD_construct.49, call @✗mindspore_nn_optim_sgd_SGD_construct.46)
+      : (<Bool, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:213/        if self.is_group_lr:/
+
+#------------------------> 0
+  %3([CNode]50) = %2()
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:213/        if self.is_group_lr:/
+  %4([CNode]52) = call @↓mindspore_nn_optim_sgd_SGD_construct.51(%3)
+      : (<null>) -> (<null>)
+      #scope: (Default)
+  Return(%4)
+      : (<null>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:213/        if self.is_group_lr:/
+}
+# Order:
+#   1: @mindspore_nn_optim_sgd_SGD_construct.43:gradients{[0]: ValueNode<FuncGraph> flatten_gradients.53, [1]: gradients}
+#   2: @mindspore_nn_optim_sgd_SGD_construct.43:gradients{[0]: ValueNode<FuncGraph> gradients_centralization.54, [1]: gradients}
+#   3: @mindspore_nn_optim_sgd_SGD_construct.43:gradients{[0]: ValueNode<FuncGraph> scale_grad.55, [1]: gradients}
+#   4: @mindspore_nn_optim_sgd_SGD_construct.43:lr{[0]: ValueNode<FuncGraph> get_lr.56}
+#   5: @mindspore_nn_optim_sgd_SGD_construct.43:[CNode]47{[0]: ValueNode<Primitive> Cond, [1]: ValueNode<BoolImm> false, [2]: ValueNode<BoolImm> false}
+#   6: @mindspore_nn_optim_sgd_SGD_construct.43:[CNode]48{[0]: ValueNode<Primitive> Switch, [1]: [CNode]47, [2]: ValueNode<FuncGraph> ✓mindspore_nn_optim_sgd_SGD_construct.49, [3]: ValueNode<FuncGraph> ✗mindspore_nn_optim_sgd_SGD_construct.46}
+#   7: @mindspore_nn_optim_sgd_SGD_construct.43:[CNode]50{[0]: [CNode]48}
+#   8: @mindspore_nn_optim_sgd_SGD_construct.43:[CNode]52{[0]: ValueNode<FuncGraph> ↓mindspore_nn_optim_sgd_SGD_construct.51, [1]: [CNode]50}
+#   9: @mindspore_nn_optim_sgd_SGD_construct.43:[CNode]57{[0]: ValueNode<Primitive> Return, [1]: [CNode]52}
+
+
+subgraph attr:
+skip_auto_parallel_compile : 1
+subgraph instance: ✗mindspore_nn_optim_sgd_SGD_construct.46 : 0x5605f992bf30
+# In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:213/        if self.is_group_lr:/
+subgraph @✗mindspore_nn_optim_sgd_SGD_construct.46 parent: [subgraph @mindspore_nn_optim_sgd_SGD_construct.43]() {
+  %1(lr) = $(mindspore_nn_optim_sgd_SGD_construct.43):call @get_lr.56()
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:212/        lr = self.get_lr()/
+  %2([CNode]58) = S-Prim-Partial[side_effect_propagate: I64(1)](S-Prim-sgd_opt, %para5_momentum, %1)
+      : (<Func, NoShape>, <Ref[Tensor[Float32]], ()>, <Ref[Tensor[Float32]], ()>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:217/            success = self.hyper_map_reverse(F.partial(_sgd_opt, self.momentum, lr),/
+  %3(gradients) = $(mindspore_nn_optim_sgd_SGD_construct.43):call @flatten_gradients.53(%para1_gradients)
+      : (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>) -> (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:209/        gradients = self.flatten_gradients(gradients)/
+  %4(gradients) = $(mindspore_nn_optim_sgd_SGD_construct.43):call @gradients_centralization.54(%3)
+      : (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>) -> (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:210/        gradients = self.gradients_centralization(gradients)/
+  %5(gradients) = $(mindspore_nn_optim_sgd_SGD_construct.43):call @scale_grad.55(%4)
+      : (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>) -> (<Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:211/        gradients = self.scale_grad(gradients)/
+  %6([CNode]59) = $(mindspore_nn_optim_sgd_SGD_construct.43):MakeTuple(%para2_weight)
+      : (<Ref[Tensor[Float32]], (1, 1, 1, 2)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:206/        params = self._parameters/
+  %7([CNode]60) = $(mindspore_nn_optim_sgd_SGD_construct.43):MakeTuple(%para3_accum.weight)
+      : (<Ref[Tensor[Float32]], (1, 1, 1, 2)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:207/        accum = self.accum/
+  %8([CNode]61) = $(mindspore_nn_optim_sgd_SGD_construct.43):MakeTuple(%para4_stat.weight)
+      : (<Ref[Tensor[Float32]], (1, 1, 1, 2)>) -> (<Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:208/        stat = self.stat/
+  %9([CNode]62) = $(mindspore_nn_optim_sgd_SGD_construct.43):MakeTuple(S-Prim-SGD[output_names: ["output"], weight_decay: F32(0), dampening: F32(0), side_effect_mem: Bool(1), input_names: ["parameters", "gradient", "learning_rate", "accum", "momentum", "stat"], nesterov: Bool(0)])
+      : (<Func, NoShape>) -> (<Tuple[Func], TupleShape(NoShape)>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:215/                                             lr, gradients, params, accum, stat, self.opt)/
+
+#------------------------> 1
+  %10(success) = S-Prim-hyper_map(%2, %5, %6, %7, %8, %9)
+      : (<Func, NoShape>, <Tuple[Tensor[Int32],Tensor[Float32]*5], TupleShape((1), (), (1, 1, 1, 2), (), (1, 1, 1, 2), (1, 1, 1, 2))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>, <Tuple[Ref[Tensor[Float32]]], TupleShape((1, 1, 1, 2))>, <Tuple[Func], TupleShape(NoShape)>) -> (<null>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:217/            success = self.hyper_map_reverse(F.partial(_sgd_opt, self.momentum, lr),/
+  Return(%10)
+      : (<null>)
+      #scope: (Default)
+      # In file /root/anaconda3/envs/MindSpore/lib/python3.9/site-packages/mindspore/nn/optim/sgd.py:217/            success = self.hyper_map_reverse(F.partial(_sgd_opt, self.momentum, lr),/
+}
+# Order:
+#   1: @✗mindspore_nn_optim_sgd_SGD_construct.46:[CNode]58{[0]: ValueNode<DoSignaturePrimitive> S-Prim-Partial, [1]: ValueNode<DoSignaturePrimitive> S-Prim-sgd_opt, [2]: momentum, [3]: lr}
+#   2: @✗mindspore_nn_optim_sgd_SGD_construct.46:success{[0]: ValueNode<DoSignaturePrimitive> S-Prim-hyper_map, [1]: [CNode]58, [2]: gradients, [3]: [CNode]59, [4]: [CNode]60, [5]: [CNode]61, [6]: [CNode]62}
+#   3: @✗mindspore_nn_optim_sgd_SGD_construct.46:[CNode]63{[0]: ValueNode<Primitive> Return, [1]: success}
+
+
+#===============================================================================
+# num of function graphs in stack: 2/3 (Ignored 1 internal frames).
