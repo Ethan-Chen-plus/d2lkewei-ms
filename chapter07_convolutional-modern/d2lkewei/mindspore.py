@@ -14,9 +14,10 @@ import mindspore
 from mindspore.dataset import transforms, vision
 import mindspore.dataset as ds
 from mindspore import ops, nn
-nn_Module = nn.Module
+from mindspore.common.initializer import initializer, XavierUniform, Uniform, _calculate_fan_in_and_fan_out
+nn_Module = nn.Cell
 
-#################   WARNING   ################
+# ################   WARNING   ################
 # The below part is generated automatically through:
 #    d2lbook build lib
 # Don't edit it directly
@@ -602,6 +603,8 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
           f'test acc {test_acc:.3f}')
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
           f'on {str(device)}')
+
+nn.Module = torch.nn.Module
 
 class Residual(nn.Module):
     """The Residual block of ResNet."""
