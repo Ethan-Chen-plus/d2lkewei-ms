@@ -604,36 +604,34 @@ def train_ch6(net, train_iter, test_iter, num_epochs, lr, device):
     print(f'{metric[2] * num_epochs / timer.sum():.1f} examples/sec '
           f'on {str(device)}')
 
-nn.Module = torch.nn.Module
-
-class Residual(nn.Module):
+class Residual(nn.Cell):
     """The Residual block of ResNet."""
     def __init__(self, input_channels, num_channels,
                  use_1x1conv=False, strides=1):
         super().__init__()
         self.conv1 = nn.Conv2d(input_channels, num_channels,
-                               kernel_size=3, padding=1, stride=strides)
+                               kernel_size=3, padding=1, stride=strides, pad_mode="pad", has_bias=True)
         self.conv2 = nn.Conv2d(num_channels, num_channels,
-                               kernel_size=3, padding=1)
+                               kernel_size=3, padding=1, pad_mode="pad", has_bias=True)
         if use_1x1conv:
             self.conv3 = nn.Conv2d(input_channels, num_channels,
-                                   kernel_size=1, stride=strides)
+                                   kernel_size=1, stride=strides, pad_mode="pad", has_bias=True)
         else:
             self.conv3 = None
         self.bn1 = nn.BatchNorm2d(num_channels)
         self.bn2 = nn.BatchNorm2d(num_channels)
 
-    def forward(self, X):
-        Y = F.relu(self.bn1(self.conv1(X)))
+    def construct(self, X):
+        Y = ops.relu(self.bn1(self.conv1(X)))
         Y = self.bn2(self.conv2(Y))
         if self.conv3:
             X = self.conv3(X)
         Y += X
-        return F.relu(Y)
+        return ops.relu(Y)
 
 d2l.DATA_HUB['time_machine'] = (d2l.DATA_URL + 'timemachine.txt',
                                 '090b5e7e70c295757f55df93cb0a180b9691891a')
-
+nn.Module = torch.nn.Module
 def read_time_machine():
     """Load the time machine dataset into a list of text lines.
 
