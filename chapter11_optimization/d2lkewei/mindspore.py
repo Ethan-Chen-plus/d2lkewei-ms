@@ -16,6 +16,8 @@ import mindspore.dataset as ds
 from mindspore import ops, nn
 from mindspore.common.initializer import initializer, XavierUniform, Uniform, _calculate_fan_in_and_fan_out
 nn_Module = nn.Cell
+from mindspore.common.initializer import Normal
+from tqdm.auto import tqdm
 
 # ################   WARNING   ################
 # The below part is generated automatically through:
@@ -407,6 +409,11 @@ class Animator:
                 self.Y[i].append(b)
         self.axes[0].cla()
         for x, y, fmt in zip(self.X, self.Y, self.fmts):
+            # print(type(x),type(y),fmt)
+            # print(x)
+            # print(y)
+            x = list(tensor.asnumpy() if isinstance(tensor, ms.Tensor) else tensor for tensor in x)
+            y = list(tensor.asnumpy() if isinstance(tensor, ms.Tensor) else tensor for tensor in y)
             self.axes[0].plot(x, y, fmt)
         self.config_axes()
         display.display(self.fig)
@@ -1350,33 +1357,33 @@ class PositionalEncoding(nn.Cell):
         X = X + self.P[:, :X.shape[1], :]
         return self.dropout(X)
 
-class PositionWiseFFN(nn.Module):
+class PositionWiseFFN(nn.Cell):
     """Positionwise feed-forward network.
 
     Defined in :numref:`sec_transformer`"""
     def __init__(self, ffn_num_input, ffn_num_hiddens, ffn_num_outputs,
                  **kwargs):
         super(PositionWiseFFN, self).__init__(**kwargs)
-        self.dense1 = nn.Linear(ffn_num_input, ffn_num_hiddens)
+        self.dense1 = nn.Dense(ffn_num_input, ffn_num_hiddens)
         self.relu = nn.ReLU()
-        self.dense2 = nn.Linear(ffn_num_hiddens, ffn_num_outputs)
+        self.dense2 = nn.Dense(ffn_num_hiddens, ffn_num_outputs)
 
-    def forward(self, X):
+    def construct(self, X):
         return self.dense2(self.relu(self.dense1(X)))
 
-class AddNorm(nn.Module):
+class AddNorm(nn.Cell):
     """Residual connection followed by layer normalization.
 
     Defined in :numref:`sec_transformer`"""
     def __init__(self, normalized_shape, dropout, **kwargs):
         super(AddNorm, self).__init__(**kwargs)
-        self.dropout = nn.Dropout(dropout)
-        self.ln = nn.LayerNorm(normalized_shape)
+        self.dropout = nn.Dropout(p=dropout)
+        self.ln = nn.LayerNorm([normalized_shape[-1]], begin_norm_axis=-1) #begin_norm_axis=1, begin_params_axis=1需要增加
 
-    def forward(self, X, Y):
+    def construct(self, X, Y):
         return self.ln(self.dropout(Y) + X)
 
-class EncoderBlock(nn.Module):
+class EncoderBlock(nn.Cell):
     """Transformer encoder block.
 
     Defined in :numref:`sec_transformer`"""
@@ -1392,7 +1399,7 @@ class EncoderBlock(nn.Module):
             ffn_num_input, ffn_num_hiddens, num_hiddens)
         self.addnorm2 = AddNorm(norm_shape, dropout)
 
-    def forward(self, X, valid_lens):
+    def construct(self, X, valid_lens):
         Y = self.addnorm1(X, self.attention(X, X, X, valid_lens))
         return self.addnorm2(Y, self.ffn(Y))
 
@@ -1407,17 +1414,17 @@ class TransformerEncoder(d2l.Encoder):
         self.num_hiddens = num_hiddens
         self.embedding = nn.Embedding(vocab_size, num_hiddens)
         self.pos_encoding = d2l.PositionalEncoding(num_hiddens, dropout)
-        self.blks = nn.Sequential()
+        self.blks = nn.SequentialCell()
         for i in range(num_layers):
-            self.blks.add_module("block"+str(i),
+            self.blks.insert_child_to_cell("block"+str(i),
                 EncoderBlock(key_size, query_size, value_size, num_hiddens,
                              norm_shape, ffn_num_input, ffn_num_hiddens,
                              num_heads, dropout, use_bias))
 
-    def forward(self, X, valid_lens, *args):
-        # Since positional encoding values are between -1 and 1, the embedding
-        # values are multiplied by the square root of the embedding dimension
-        # to rescale before they are summed up
+    def construct(self, X, valid_lens, *args):
+        # 因为位置编码值在-1和1之间，
+        # 因此嵌入值乘以嵌入维度的平方根进行缩放，
+        # 然后再与位置编码相加。
         X = self.pos_encoding(self.embedding(X) * math.sqrt(self.num_hiddens))
         self.attention_weights = [None] * len(self.blks)
         for i, blk in enumerate(self.blks):
@@ -1435,6 +1442,7 @@ def train_2d(trainer, steps=20, f_grad=None):
 
     Defined in :numref:`subsec_gd-learningrate`"""
     # `s1` and `s2` are internal state variables that will be used later
+    # s1和s2是稍后将使用的内部状态变量
     x1, x2, s1, s2 = -5, -2, 0, 0
     results = [(x1, x2)]
     for i in range(steps):
@@ -1451,11 +1459,10 @@ def show_trace_2d(f, results):
 
     Defined in :numref:`subsec_gd-learningrate`"""
     d2l.set_figsize()
-    results = [(float(x), float(y)) for x, y in results]
-    # print(results)
     d2l.plt.plot(*zip(*results), '-o', color='#ff7f0e')
-    x1, x2 = ops.meshgrid(ops.arange(-5.5, 1.0, 0.1),
+    tensors = ops.meshgrid(ops.arange(-5.5, 1.0, 0.1),
                           ops.arange(-3.0, 1.0, 0.1))
+    x1, x2 = tuple(tensor.asnumpy() if isinstance(tensor, ms.Tensor) else tensor for tensor in tensors)
     d2l.plt.contour(x1, x2, f(x1, x2), colors='#1f77b4')
     d2l.plt.xlabel('x1')
     d2l.plt.ylabel('x2')
@@ -1467,7 +1474,7 @@ def get_data_ch11(batch_size=10, n=1500):
     """Defined in :numref:`sec_minibatches`"""
     data = np.genfromtxt(d2l.download('airfoil'),
                          dtype=np.float32, delimiter='\t')
-    data = torch.from_numpy((data - data.mean(axis=0)) / data.std(axis=0))
+    data = (data - data.mean(axis=0)) / data.std(axis=0)
     data_iter = d2l.load_array((data[:n, :-1], data[:n, -1]),
                                batch_size, is_train=True)
     return data_iter, data.shape[1]-1
@@ -1476,23 +1483,23 @@ def train_ch11(trainer_fn, states, hyperparams, data_iter,
                feature_dim, num_epochs=2):
     """Defined in :numref:`sec_minibatches`"""
     # Initialization
-    w = torch.normal(mean=0.0, std=0.01, size=(feature_dim, 1),
-                     requires_grad=True)
-    b = torch.zeros((1), requires_grad=True)
+    w = mindspore.Parameter(ops.normal(mean=0.0, stddev=0.01, shape=(feature_dim, 1)))
+    b = mindspore.Parameter(ops.zeros((1)))
     net, loss = lambda X: d2l.linreg(X, w, b), d2l.squared_loss
+    loss_fn = lambda x, y: loss(net(x), y).mean()
+    grad_fn = mindspore.value_and_grad(loss_fn, None, [w, b])
     # Train
     animator = d2l.Animator(xlabel='epoch', ylabel='loss',
-                            xlim=[0, num_epochs], ylim=[0.22, 0.35])
+                            xlim=[0, num_epochs]) #ylim=[0.22, 0.35])
     n, timer = 0, d2l.Timer()
     for _ in range(num_epochs):
         for X, y in data_iter:
-            l = loss(net(X), y).mean()
-            l.backward()
-            trainer_fn([w, b], states, hyperparams)
+            l, [dw, db] = grad_fn(X, y)
+            trainer_fn([w, b], [dw, db], states, hyperparams)
             n += X.shape[0]
             if n % 200 == 0:
                 timer.stop()
-                animator.add(n/X.shape[0]/len(data_iter),
+                animator.add(n / X.shape[0] / data_iter.get_dataset_size(),
                              (d2l.evaluate_loss(net, data_iter, loss),))
                 timer.start()
     print(f'loss: {animator.Y[0][-1]:.3f}, {timer.avg():.3f} sec/epoch')
@@ -1501,29 +1508,29 @@ def train_ch11(trainer_fn, states, hyperparams, data_iter,
 def train_concise_ch11(trainer_fn, hyperparams, data_iter, num_epochs=4):
     """Defined in :numref:`sec_minibatches`"""
     # Initialization
-    net = nn.Sequential(nn.Linear(5, 1))
+    # 初始化模型
+    net = nn.SequentialCell(nn.Dense(5, 1))
     def init_weights(m):
-        if type(m) == nn.Linear:
-            torch.nn.init.normal_(m.weight, std=0.01)
+        if type(m) == nn.Dense:
+            m.weight.set_data(initializer(Normal(sigma=0.01),m.weight.shape,m.weight.dtype))
     net.apply(init_weights)
 
-    optimizer = trainer_fn(net.parameters(), **hyperparams)
+    optimizer = trainer_fn(net.trainable_params(), **hyperparams)
     loss = nn.MSELoss(reduction='none')
     animator = d2l.Animator(xlabel='epoch', ylabel='loss',
-                            xlim=[0, num_epochs], ylim=[0.22, 0.35])
+                            xlim=[0, num_epochs])
     n, timer = 0, d2l.Timer()
+    def forward_fn(X, y):
+        return loss(net(X), y.reshape(net(X).shape)).mean()
+    grad_fn = ms.value_and_grad(forward_fn,None,net.trainable_params())
     for _ in range(num_epochs):
         for X, y in data_iter:
-            optimizer.zero_grad()
-            out = net(X)
-            y = y.reshape(out.shape)
-            l = loss(out, y)
-            l.mean().backward()
-            optimizer.step()
+            out, grads = grad_fn(X, y)
+            optimizer(grads)
             n += X.shape[0]
             if n % 200 == 0:
                 timer.stop()
-                # `MSELoss` computes squared error without the 1/2 factor
+                # MSELoss计算平方误差时不带系数1/2
                 animator.add(n/X.shape[0]/len(data_iter),
                              (d2l.evaluate_loss(net, data_iter, loss) / 2,))
                 timer.start()
