@@ -1,0 +1,55 @@
+# 1.This file shows the parsed IR info when graph evaluating failed to help find the problem.
+# 2.You can search the last `------------------------>` to the node which is inferred failed.
+# 3.Refer to https://www.mindspore.cn/search?inputValue=analyze_fail.ir to get more instructions.
+# ===============================================================================
+
+subgraph attr:
+subgraph instance: get_net.1 : 0x563fe796a1e0
+# In file /tmp/ipykernel_3966641/376148590.py:7/
+subgraph @get_net.1(%para1_x) {
+  %1([CNode]2) = ClassType(I64(512), I64(256))
+      : (<Int64, NoShape>, <Int64, NoShape>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:8/
+  %2([CNode]3) = ClassType()
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:9/
+  %3([CNode]4) = ClassType(I64(256), I64(128))
+      : (<Int64, NoShape>, <Int64, NoShape>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:10/
+  %4([CNode]5) = ClassType()
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:11/
+  %5([CNode]6) = ClassType(I64(128), I64(2))
+      : (<Int64, NoShape>, <Int64, NoShape>) -> (<Func, NoShape>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:12/
+
+#------------------------> 0
+  %6(net) = ClassType(%1, %2, %3, %4, %5)
+      : (<Func, NoShape>, <Func, NoShape>, <Func, NoShape>, <Func, NoShape>, <Func, NoShape>) -> (<null>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:8/
+  %7([CNode]7) = %6(%para1_x)
+      : (<Tensor[Float32], (1, 512)>) -> (<null>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:13/
+  Return(%7)
+      : (<null>)
+      #scope: (Default)
+      # In file /tmp/ipykernel_3966641/376148590.py:13/
+}
+# Order:
+#   1: @get_net.1:[CNode]2{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.basic.Dense', [1]: ValueNode<Int64Imm> 512, [2]: ValueNode<Int64Imm> 256}
+#   2: @get_net.1:[CNode]3{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.activation.ReLU'}
+#   3: @get_net.1:[CNode]4{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.basic.Dense', [1]: ValueNode<Int64Imm> 256, [2]: ValueNode<Int64Imm> 128}
+#   4: @get_net.1:[CNode]5{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.activation.ReLU'}
+#   5: @get_net.1:[CNode]6{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.basic.Dense', [1]: ValueNode<Int64Imm> 128, [2]: ValueNode<Int64Imm> 2}
+#   6: @get_net.1:net{[0]: ValueNode<ClassType> class 'mindspore.nn.layer.container.SequentialCell', [1]: [CNode]2, [2]: [CNode]3, [3]: [CNode]4, [4]: [CNode]5, [5]: [CNode]6}
+#   7: @get_net.1:[CNode]7{[0]: net, [1]: x}
+#   8: @get_net.1:[CNode]8{[0]: ValueNode<Primitive> Return, [1]: [CNode]7}
+
+
+#===============================================================================
+# num of function graphs in stack: 1
